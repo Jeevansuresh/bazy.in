@@ -11,7 +11,7 @@ def generate_date_range(start_date, end_date):
 
 # Step 1: Scrape and save data to CSV
 start_date = datetime(2022, 1, 1)  # Starting from Jan 1, 2022
-end_date = datetime.today()        # Until today's date
+end_date = datetime.today() - timedelta(days=1)        # Until yesterday's date
 
 csv_file_path = 'vegetable_prev_prices.csv'
 
@@ -60,7 +60,6 @@ with open(csv_file_path, mode="w", newline="", encoding="utf-8") as csvfile:
                                         retail_min, retail_max, mall_min, mall_max, units])
                 
                 success_dates += 1
-                print(f"{formatted_date} DATA Received")
 
             except Exception as e:
                 print(f"Error processing data for {formatted_date}: {e}")
@@ -82,9 +81,9 @@ db_connection = mysql.connector.connect(
 cursor = db_connection.cursor()
 
 # Step 2.1: Clear the existing data from the table
-delete_query = "DELETE FROM VEG_DATA"
-cursor.execute(delete_query)
-db_connection.commit()
+#delete_query = "DELETE FROM VEG_DATA"
+#cursor.execute(delete_query)
+#db_connection.commit()
 print("Existing data cleared from VEG_DATA table.")
 
 # Create table if it doesn't exist (adjust column types as needed)
