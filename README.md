@@ -1,50 +1,53 @@
-Chennai Vegetable Market Price Scraper
+# Chennai Vegetable Market Data Tracker
 
-This project scrapes daily vegetable price data from the Chennai Fresh Market and loads it into a MySQL database for analysis and record-keeping. It tracks wholesale and retail prices, mall prices, units, and vegetable names on a day-wise basis.
+A full-stack Python web application to scrape, store, analyze, and visualize daily vegetable prices from the Chennai market.
 
-Features
-Scrapes historical data from January 1, 2022, up to the current date.
+## 🌾 Project Overview
 
-Collects daily data and appends it to the database.
+This project automates the scraping of daily vegetable prices from [vegetablemarketprice.com](https://vegetablemarketprice.com/market/chennai/today/), stores historical and live data in a MySQL database, performs rolling analytics, and displays insights via a web dashboard.
 
-Organizes scraped data into CSV files (vegetable_prev_prices.csv and vegetable_prices_today.csv).
+The project is divided into **three phases**:
 
-Loads structured data into a MySQL table (VEG_DATA).
+---
 
-Provides a summary of data received and missing dates (for historical fetches).
+## 📦 Phase 1: Data Scraping and Storage
 
-Cron job compatible for daily automation.
+### ✅ Tasks Completed
+- Scrapes daily vegetable market data from the Chennai market page.
+- Parses data fields: `Calendar Date (YYYYMMDD)`, `Vegetable Name`, `Unit`, `Wholesale Price`, `Retail Min`, `Retail Max`, `Mall Min`, `Mall Max`.
+- Loops from `01/01/2022` to today to backfill historical data.
+- Inserts data into a MySQL table `VEG_DATA`.
+- Scheduled with a cron job to run daily at **3:30 PM IST / 6 PM EST**.
 
-Project Structure
-pastdatawebscrape.py – Scrapes historical data and loads it into the DB.
 
-dailydatawebscrape.py – Scrapes the current day’s data and updates the DB daily.
 
-Tech Stack
-Python
+---
 
-MySQL
+## 📈 Phase 2: Data Analysis & Rolling Metrics
 
-Requests
+### ✅ Tasks Completed
+- Calculates rolling:
+  - **90-day Moving Average (90_DMA)**
+  - **30-day Moving Average (30_DMA)**
+  - **90-day High Price (90_HIGH)**
+  - **90-day Low Price (90_LOW)**
+  - **90-day Median Price (90_MEDIAN)**
+  - **Previous Year 90-day Average (PREV_90_DMA)**
+- Updates these fields daily for each vegetable in the `VEG_DATA` table.
+- Scheduled via a cron job to run **after the scraper** every day.
 
-CSV
+---
 
-Phase 1 Completed
-Historical backfill done
+## 📊 Phase 3: Visualization Dashboard
 
-Daily scraper functional
+### ✅ Tasks Completed
+- Web-based interface with:
+  - Dropdown menu to select vegetables.
+  - Line chart showing last 10 days of:
+    - **Wholesale Price (Red)**
+    - **90_DMA (Yellow)**
+    - **30_DMA (Green)**
+    - **90_MEDIAN (Blue)**
+  - Interactive and responsive design using Plotly or Chart.js.
 
-Ready for deployment with scheduled automation
-
-Phase 2 Completed
-90_DMA (Days Moving Average): Tracks the 90-day and 30-day moving average of the wholesale price. Calculates by adding all the values of the past number of days and dividing by the number of days.
-
-90_HIGH: Tracks the highest wholesale price in the rolling past 90 days.
-
-90_LOW: Tracks the lowest wholesale price in the rolling past 90 days.
-
-90_MEDIAN: Tracks the median wholesale price in the rolling past 90 days.
-
-PREV_90_DMA: Compares the current year’s past 90 days (e.g., Feb 10th to May 7th, 2025) to the previous year’s past 90 days (e.g., Feb 10th to May 7th, 2024).
-
-Updates calculated fields to the table (VEG_DATA) with: 90_DMA, 30_DMA, 90_HIGH, 90_LOW, 90_MEDIAN, PREV_90_DMA.
+---
