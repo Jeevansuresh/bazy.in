@@ -19,46 +19,25 @@ def clean_price(value):
 
 def calculate_statistics(data, vegetable, today_date):
     current_date = today_date - timedelta(days=1)
-    veggie_data = data[data['Vegetable'] == vegetable]
+    veggie_data = data[data['Vegetable'] == vegetable].dropna(subset=['Wholesale Price'])
+    veggie_data = veggie_data[veggie_data['Date'] <= current_date].sort_values('Date')
 
-    date_90_days_ago = current_date - timedelta(days=89)
-    recent_data = veggie_data[(veggie_data['Date'] >= date_90_days_ago) & 
-                              (veggie_data['Date'] <= current_date)]
+    dma_30_data = veggie_data.tail(30)
+    dma_30 = dma_30_data['Wholesale Price'].mean() if len(dma_30_data) == 30 else None
 
-    # 30 DMA
-    if len(recent_data) < 30:
-        dma_30 = None
-    else:
-        dma_30 = recent_data.sort_values('Date').tail(30)['Wholesale Price'].mean()
-
-    # 90 DMA and related stats
-    if len(recent_data) < 90:
-        dma_90_data = veggie_data[veggie_data['Date'] <= current_date].sort_values('Date').tail(90)
-    else:
-        dma_90_data = recent_data.sort_values('Date').tail(90)
-
-    if len(dma_90_data) < 90:
-        dma_90 = highest_90 = lowest_90 = median_90 = None
-    else:
+    dma_90_data = veggie_data.tail(90)
+    if len(dma_90_data) == 90:
         dma_90 = dma_90_data['Wholesale Price'].mean()
         highest_90 = dma_90_data['Wholesale Price'].max()
         lowest_90 = dma_90_data['Wholesale Price'].min()
         median_90 = dma_90_data['Wholesale Price'].median()
-
-    # Previous year DMA
-    previous_year_start = date_90_days_ago - timedelta(days=365)
-    previous_year_end = current_date - timedelta(days=365)
-    previous_year_data = veggie_data[(veggie_data['Date'] >= previous_year_start) &
-                                     (veggie_data['Date'] <= previous_year_end)]
-
-    if len(previous_year_data) < 90:
-        earlier_prev_data = veggie_data[veggie_data['Date'] <= previous_year_end].sort_values('Date').tail(90)
-        if len(earlier_prev_data) >= 90:
-            dma_90_prev = earlier_prev_data['Wholesale Price'].mean()
-        else:
-            dma_90_prev = None
     else:
-        dma_90_prev = previous_year_data.sort_values('Date').tail(90)['Wholesale Price'].mean()
+        dma_90 = highest_90 = lowest_90 = median_90 = None
+
+    prev_cutoff = current_date - timedelta(days=365)
+    prev_year_data = veggie_data[veggie_data['Date'] <= prev_cutoff].sort_values('Date')
+    dma_90_prev_data = prev_year_data.tail(90)
+    dma_90_prev = dma_90_prev_data['Wholesale Price'].mean() if len(dma_90_prev_data) == 90 else None
 
     return dma_30, dma_90, highest_90, lowest_90, median_90, dma_90_prev
 
