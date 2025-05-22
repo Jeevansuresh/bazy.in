@@ -48,6 +48,6 @@ The project is divided into **three phases**:
     - **90_DMA (Yellow)**
     - **30_DMA (Green)**
     - **90_MEDIAN (Blue)**
-  - Interactive and responsive design using Plotly or Chart.js.
+  - Interactive and responsive design dashboard
 
 ---
