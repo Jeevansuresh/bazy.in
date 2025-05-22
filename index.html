@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Vegetable Price Chart</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        /* Reset some default styles */
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #74ebd5 0%, #ACB6E5 100%);
+            color: #222;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem 1rem;
+        }
+
+        h2 {
+            font-weight: 700;
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: #1a1a1a;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        label {
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+            display: block;
+            color: #333;
+        }
+
+        select#vegetable {
+            width: 240px;
+            padding: 0.5rem 1rem;
+            font-size: 1rem;
+            border-radius: 8px;
+            border: 2px solid #4A90E2;
+            background-color: white;
+            box-shadow: 0 2px 6px rgba(74, 144, 226, 0.3);
+            cursor: pointer;
+            transition: border-color 0.3s ease;
+            margin-bottom: 2rem;
+            outline: none;
+        }
+
+        select#vegetable:hover, select#vegetable:focus {
+            border-color: #2c6dcc;
+            box-shadow: 0 4px 10px rgba(44, 109, 204, 0.5);
+        }
+
+        #chart-container {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+            max-width: 900px;
+            width: 100%;
+        }
+
+        canvas#priceChart {
+            /* Let Chart.js manage responsive size */
+            width: 100% !important;
+            height: 400px !important;
+            border-radius: 12px;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 600px) {
+            h2 {
+                font-size: 1.5rem;
+            }
+
+            select#vegetable {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h2>Vegetable Prices - Last 10 Days</h2>
+
+    <label for="vegetable">Choose a Vegetable:</label>
+    <select id="vegetable" onchange="fetchData()">
+        <option value="">--Select--</option>
+        {% for veg in vegetables %}
+        <option value="{{ veg }}">{{ veg }}</option>
+        {% endfor %}
+    </select>
+
+    <div id="chart-container">
+        <canvas id="priceChart"></canvas>
+    </div>
+
+    <script>
+        let chart;
+
+        function fetchData() {
+            const veg = document.getElementById("vegetable").value;
+            if (!veg) return;
+
+            fetch(`/get_data?vegetable=${veg}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (!data || data.error) {
+                        alert(data.error || "No data available for this vegetable.");
+                        if(chart) {
+                            chart.destroy();
+                            chart = null;
+                        }
+                        return;
+                    }
+
+                    const labels = data.map(row => row.date);
+                    const wholesale = data.map(row => row.wholesale_price);
+                    const dma90 = data.map(row => row.dma_90);
+                    const dma30 = data.map(row => row.dma_30);
+                    const median90 = data.map(row => row.median_90);
+
+                    if (chart) chart.destroy();
+
+                    const ctx = document.getElementById("priceChart").getContext("2d");
+                    chart = new Chart(ctx, {
+                        type: "line",
+                        data: {
+                            labels: labels,
+                            datasets: [
+                                {
+                                    label: "Wholesale Price",
+                                    data: wholesale,
+                                    borderColor: "rgba(220,53,69,1)", // bootstrap red
+                                    backgroundColor: "rgba(220,53,69,0.2)",
+                                    fill: true,
+                                    tension: 0.3,
+                                    pointRadius: 3,
+                                    borderWidth: 2
+                                },
+                                {
+                                    label: "90 DMA",
+                                    data: dma90,
+                                    borderColor: "rgba(255,193,7,1)", // bootstrap yellow
+                                    backgroundColor: "rgba(255,193,7,0.2)",
+                                    fill: true,
+                                    tension: 0.3,
+                                    pointRadius: 3,
+                                    borderWidth: 2
+                                },
+                                {
+                                    label: "30 DMA",
+                                    data: dma30,
+                                    borderColor: "rgba(40,167,69,1)", // bootstrap green
+                                    backgroundColor: "rgba(40,167,69,0.2)",
+                                    fill: true,
+                                    tension: 0.3,
+                                    pointRadius: 3,
+                                    borderWidth: 2
+                                },
+                                {
+                                    label: "90 Median",
+                                    data: median90,
+                                    borderColor: "rgba(0,123,255,1)", // bootstrap blue
+                                    backgroundColor: "rgba(0,123,255,0.2)",
+                                    fill: true,
+                                    tension: 0.3,
+                                    pointRadius: 3,
+                                    borderWidth: 2
+                                }
+                            ]
+                        },
+                        options: {
+                            responsive: true,
+                            interaction: {
+                                mode: 'nearest',
+                                intersect: false
+                            },
+                            plugins: {
+                                legend: {
+                                    position: 'top',
+                                    labels: {
+                                        font: {
+                                            size: 14
+                                        }
+                                    }
+                                },
+                                title: {
+                                    display: true,
+                                    text: `Price Trend for ${veg}`,
+                                    font: {
+                                        size: 18,
+                                        weight: 'bold'
+                                    }
+                                },
+                                tooltip: {
+                                    enabled: true,
+                                    mode: 'index',
+                                    intersect: false,
+                                }
+                            },
+                            scales: {
+                                x: {
+                                    ticks: {
+                                        maxRotation: 45,
+                                        minRotation: 30,
+                                        font: {
+                                            size: 12
+                                        }
+                                    },
+                                    grid: {
+                                        display: false
+                                    }
+                                },
+                                y: {
+                                    beginAtZero: true,
+                                    ticks: {
+                                        font: {
+                                            size: 12
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                });
+        }
+    </script>
+</body>
+</html>
