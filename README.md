@@ -83,3 +83,7 @@ The project is divided into **four phases**:
 * Enables further study into how **climatic factors** may influence vegetable pricing patterns.
 
 ---
+
+🌐 Live Website
+
+The website is currently live at: bazy.in
