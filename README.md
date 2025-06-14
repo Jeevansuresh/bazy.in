@@ -51,3 +51,4 @@ The project is divided into **three phases**:
   - Interactive and responsive design dashboard
 
 ---
+# bazy.in
