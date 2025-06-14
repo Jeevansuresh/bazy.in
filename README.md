@@ -46,7 +46,7 @@ The project is divided into **four phases**:
   * **90-day Median Price (90\_MEDIAN)**
   * **Previous Year 90-day Average (PREV\_90\_DMA)**
 * Updates these fields daily for each vegetable in the `VEG_DATA` table.
-* Scheduled via a cron job to run **after the scraper** every day.
+* Scheduled via a **cron job** to run after the scraper every day.
 
 ---
 
@@ -56,14 +56,14 @@ The project is divided into **four phases**:
 
 * Web-based interface with:
 
-  * Dropdown menu to **select vegetables**.
+  * Dropdown menu to **select vegetables**
   * Line chart showing last 10 days of:
 
     * **Wholesale Price**
     * **90\_DMA**
     * **30\_DMA**
     * **90\_MEDIAN**
-  * **Interactive and responsive design** dashboard.
+  * **Interactive and responsive** dashboard design
 
 ---
 
@@ -71,19 +71,19 @@ The project is divided into **four phases**:
 
 ### ✅ Tasks Completed
 
-* Scrapes daily **weather data** for Chennai using the **Meteostat** Python module (observed METAR reports).
+* Scrapes daily weather data ( another Cronjob) of Chennai using the **Meteostat** Python module (observed METAR reports).
 * Captures:
 
   * **Afternoon Temperature (°C)**
   * **Afternoon Rainfall (mm)**
-* Stores weather data in a separate **MySQL table**.
+* Stores weather data in a separate **MySQL table**
 * Visualizes the correlation of:
 
-  * **Price vs Temperature vs Rainfall** on a 10-day timeline.
-* Enables further study into how **climatic factors** may influence vegetable pricing patterns.
+  * **Price vs Temperature vs Rainfall** on a 10-day timeline
+* Enables further study into how **climatic factors may influence vegetable pricing patterns**
 
 ---
 
-🌐 Live Website
+## 🌐 Live Website
 
-The website is currently live at: bazy.in
+The website is currently live at: **[bazy.in](http://bazy.in)**
