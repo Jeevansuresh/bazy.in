@@ -8,8 +8,8 @@ import pandas as pd
 # --- Configuration ---
 DB_CONFIG = {
     "host": "localhost",
-    "user": "root",
-    "password": "Skyno@1978",
+    "user": "jagi",
+    "password": "Padjagi75$",
     "database": "vegetables"
 }
 
@@ -17,10 +17,9 @@ DB_CONFIG = {
 def clean_price(value):
     return value.replace('₹', '').replace(',', '').strip()
 
-def calculate_statistics(data, vegetable, today_date):
-    current_date = today_date - timedelta(days=1)
-    veggie_data = data[data['Vegetable'] == vegetable].dropna(subset=['Wholesale Price'])
-    veggie_data = veggie_data[veggie_data['Date'] <= current_date].sort_values('Date')
+def calculate_statistics(df, vegetable, today_date):
+    current_date = pd.to_datetime(today_date) - pd.Timedelta(days=1)  # convert to Timestamp and subtract 1 day
+    veggie_data = df[(df['Vegetable'] == vegetable) & (df['Date'] <= current_date)].dropna(subset=['Wholesale Price']).sort_values('Date')
 
     dma_30_data = veggie_data.tail(30)
     dma_30 = dma_30_data['Wholesale Price'].mean() if len(dma_30_data) == 30 else None
@@ -34,12 +33,28 @@ def calculate_statistics(data, vegetable, today_date):
     else:
         dma_90 = highest_90 = lowest_90 = median_90 = None
 
-    prev_cutoff = current_date - timedelta(days=365)
+    prev_cutoff = current_date - pd.Timedelta(days=365)
     prev_year_data = veggie_data[veggie_data['Date'] <= prev_cutoff].sort_values('Date')
     dma_90_prev_data = prev_year_data.tail(90)
     dma_90_prev = dma_90_prev_data['Wholesale Price'].mean() if len(dma_90_prev_data) == 90 else None
 
     return dma_30, dma_90, highest_90, lowest_90, median_90, dma_90_prev
+
+def update_today_stats(cursor, db, df, today_date):
+    vegetables = df['Vegetable'].unique()
+    updated_count = 0
+    for veg in vegetables:
+        stats = calculate_statistics(df, veg, today_date)
+        stats = tuple(float(x) if x is not None else None for x in stats)
+        update_query = """
+        UPDATE VEG_DATA
+        SET dma_30 = %s, dma_90 = %s, high_90 = %s, low_90 = %s, median_90 = %s, dma_90_prev = %s
+        WHERE vegetable = %s AND date = %s
+        """
+        cursor.execute(update_query, (*stats, veg, today_date))
+        updated_count += 1
+    db.commit()
+    print(f"\n✅ Statistics updated for {updated_count} vegetables for date {today_date}")
 
 # --- Connect to Database ---
 db = mysql.connector.connect(**DB_CONFIG)
@@ -69,7 +84,16 @@ if response.status_code == 200:
 
             for row in rows[1:]:
                 cols = row.find_all("td")
-                vegetable = cols[1].text.strip().split('(')[0].strip()
+                full_name = cols[1].text.strip()
+
+                if "Brinjal" in full_name:
+                    if "Big" in full_name:
+                        vegetable = "Brinjal Big"
+                    else:
+                        vegetable = "Brinjal"
+                else:
+                    vegetable = full_name.split('(')[0].strip()
+
                 wholesale_price = clean_price(cols[2].text.strip())
 
                 retail_prices = [clean_price(p) for p in cols[3].text.strip().split(" - ")]
@@ -100,40 +124,22 @@ if response.status_code == 200:
                     print(f"⚠️ Insert failed for {vegetable}: {err}")
                     db.rollback()
         print(f"\n✅ Today's data inserted for {inserted} vegetables.")
+
+        # After inserting today's data, read from DB and update today's stats
+        cursor.execute("SELECT date, vegetable, wholesale_price FROM VEG_DATA WHERE date <= %s", (today_date,))
+        all_data = cursor.fetchall()
+        df = pd.DataFrame(all_data, columns=['Date', 'Vegetable', 'Wholesale Price'])
+        df['Date'] = pd.to_datetime(df['Date'])
+        df['Wholesale Price'] = pd.to_numeric(df['Wholesale Price'], errors='coerce')
+
+        print("\n📊 Calculating and updating statistics for today's data...")
+        update_today_stats(cursor, db, df, today_date)
+
     else:
         print("⚠️ No table found on page.")
 else:
     print("❌ Failed to fetch today's data.")
 
-# --- Backfill Calculated Fields ---
-print("\n📊 Starting backfill of statistics...")
-cursor.execute("SELECT DISTINCT vegetable FROM VEG_DATA")
-vegetables = [row[0] for row in cursor.fetchall()]
-cursor.execute("SELECT DISTINCT date FROM VEG_DATA")
-dates = [row[0] for row in cursor.fetchall()]
-
-cursor.execute("SELECT date, vegetable, wholesale_price FROM VEG_DATA")
-all_data = cursor.fetchall()
-df = pd.DataFrame(all_data, columns=['Date', 'Vegetable', 'Wholesale Price'])
-df['Date'] = pd.to_datetime(df['Date'])
-df['Wholesale Price'] = pd.to_numeric(df['Wholesale Price'], errors='coerce')
-
-updated_rows = 0
-for veg in vegetables:
-    for dt in dates:
-        stats = calculate_statistics(df, veg, pd.to_datetime(dt))
-        stats = tuple(float(x) if x is not None else None for x in stats)
-        update_query = """
-        UPDATE VEG_DATA
-        SET dma_30 = %s, dma_90 = %s, high_90 = %s, low_90 = %s, median_90 = %s, dma_90_prev = %s
-        WHERE vegetable = %s AND date = %s
-        """
-        cursor.execute(update_query, (*stats, veg, dt))
-        updated_rows += 1
-        db.commit()
-
-print(f"\n✅ Backfill complete. Total records updated: {updated_rows}")
-
 cursor.close()
 db.close()
-print("🔚 All operations completed successfully.")
+print("🔚 Operation completed.")

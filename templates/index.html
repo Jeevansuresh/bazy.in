@@ -1,485 +1,347 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<title>Vegetable Price Chart</title>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Poppins:wght@500&display=swap" rel="stylesheet" />
-
-<style>
-  /* Reset */
-  * {
-    box-sizing: border-box;
-  }
-
-  body {
-    margin: 0;
-    font-family: 'Inter', 'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, #0b1520 0%, #141c2a 100%);
-    color: #cfd8dc;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 3rem 1rem 4rem;
-    transition: background-color 0.4s ease, color 0.4s ease;
-  }
-
-  h2 {
-    font-weight: 700;
-    font-size: 2rem;
-    margin-bottom: 1.5rem;
-    color: #e1e8f0;
-    letter-spacing: 0.03em;
-  }
-
-  label {
-    font-weight: 600;
-    font-size: 1.1rem;
-    margin-bottom: 0.6rem;
-    display: block;
-    color: #9bb0c9;
-  }
-
-  select#vegetable {
-    width: 250px;
-    padding: 0.5rem 1rem;
-    font-size: 1rem;
-    border-radius: 8px;
-    border: 1.8px solid #30475e;
-    background-color: #182233;
-    color: #cfd8dc;
-    cursor: pointer;
-    transition:
-      border-color 0.35s ease,
-      background-color 0.35s ease,
-      color 0.35s ease;
-    margin-bottom: 2rem;
-    outline-offset: 3px;
-    opacity: 1;
-    animation: fadeIn 0.6s ease;
-  }
-
-  select#vegetable:hover {
-    border-color: #4a90e2;
-  }
-
-  select#vegetable:focus {
-    border-color: #4a90e2;
-    background-color: #1f2e49;
-    outline: none;
-  }
-
-  /* Smooth fade in */
-  @keyframes fadeIn {
-    from {opacity: 0;}
-    to {opacity: 1;}
-  }
-
-  #chart-container {
-    position: relative;
-    background-color: #1e293b;
-    padding: 2rem 2.5rem;
-    border-radius: 14px;
-    box-shadow: 0 10px 20px rgba(30, 50, 80, 0.75);
-    max-width: 900px;
-    width: 100%;
-    min-height: 440px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    color: #8a9bb8;
-  }
-
-  canvas#priceChart {
-    width: 100% !important;
-    height: 400px !important;
-    border-radius: 12px;
-  }
-
-  /* Loading spinner */
-  #loadingSpinner {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    border: 6px solid #324a72;
-    border-top: 6px solid #4a90e2;
-    border-radius: 50%;
-    width: 48px;
-    height: 48px;
-    animation: spin 1.1s linear infinite;
-    display: none;
-    z-index: 10;
-  }
-
-  @keyframes spin {
-    0% { transform: translate(-50%, -50%) rotate(0deg);}
-    100% { transform: translate(-50%, -50%) rotate(360deg);}
-  }
-
-  /* Responsive */
-  @media (max-width: 600px) {
-    h2 {
-      font-size: 1.5rem;
+  <meta charset="UTF-8" />
+  <title>Vegetable Price Chart</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Poppins:wght@500&display=swap" rel="stylesheet" />
+  <style>
+    * {
+      box-sizing: border-box;
+      transition: all 0.3s ease;
+    }
+    body {
+      font-family: 'Poppins', sans-serif;
+      margin: 0;
+      padding: 2rem;
+      background: linear-gradient(145deg, #0a0f1c, #121b2d);
+      color: #e1e8f0;
+      animation: fadeIn 1s ease-in-out;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 2rem;
+      color: #4fc3f7;
+      animation: slideDown 0.8s ease-in-out;
+    }
+    label {
+      font-weight: bold;
+      font-size: 1.1rem;
+      margin-right: 0.5rem;
+    }
+    select {
+      font-size: 1rem;
+      padding: 0.6rem 1rem;
+      border-radius: 10px;
+      border: 1px solid #4fc3f7;
+      background-color: #1c2535;
+      color: #e1e8f0;
+      margin-bottom: 2rem;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+    select:hover {
+      transform: scale(1.03);
+      border-color: #64d3ff;
+    }
+    canvas {
+      margin-top: 2rem;
+      background-color: #1e2b3a;
+      border-radius: 16px;
+      padding: 1rem;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+      animation: fadeIn 0.6s ease-in-out;
+    }
+    #chart-container {
+      max-width: 900px;
+      margin: auto;
+    }
+    #loadingSpinner {
+      display: none;
+      text-align: center;
+      font-size: 1.2rem;
+      color: #ffb300;
+      margin-top: 1rem;
+    }
+    #noVegSelected {
+      text-align: center;
+      color: #ffb300;
+      font-size: 1.2rem;
+      margin-top: 2rem;
+      display: none;
+      animation: fadeIn 0.8s ease-in-out;
     }
 
-    select#vegetable {
-      width: 100%;
+    @keyframes fadeIn {
+      0% { opacity: 0; transform: translateY(10px); }
+      100% { opacity: 1; transform: translateY(0); }
     }
-  }
 
-  /* Chart points hover effect via Chart.js options */
-
-  /* Dark/Light mode toggle */
-  #darkModeToggleContainer {
-    position: fixed;
-    top: 20px;
-    right: 25px;
-    z-index: 100;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    user-select: none;
-  }
-
-  #darkModeToggle {
-    appearance: none;
-    width: 46px;
-    height: 24px;
-    background: #4a90e2;
-    border-radius: 12px;
-    position: relative;
-    cursor: pointer;
-    outline: none;
-    transition: background-color 0.4s ease;
-  }
-
-  #darkModeToggle::before {
-    content: '';
-    position: absolute;
-    top: 2px;
-    left: 2px;
-    width: 20px;
-    height: 20px;
-    background: #ffffff;
-    border-radius: 50%;
-    transition: transform 0.3s ease;
-    box-shadow: 0 1px 3px rgb(0 0 0 / 0.3);
-  }
-
-  #darkModeToggle:checked {
-    background: #223344;
-  }
-
-  #darkModeToggle:checked::before {
-    transform: translateX(22px);
-    background: #ffdd57;
-    box-shadow: 0 0 8px #ffdd57;
-  }
-
-  #darkModeLabel {
-    font-weight: 600;
-    font-size: 0.9rem;
-    color: #aab8d6;
-  }
-
-  /* Light mode overrides */
-  body.light-mode {
-    background: linear-gradient(135deg, #e6ebf7 0%, #c8d3e7 100%);
-    color: #2c3e50;
-  }
-  body.light-mode h2 {
-    color: #1e2a43;
-  }
-  body.light-mode label {
-    color: #536878;
-  }
-  body.light-mode select#vegetable {
-    background-color: #f9fbff;
-    border-color: #9bb0c9;
-    color: #1e2a43;
-  }
-  body.light-mode select#vegetable:hover {
-    border-color: #4a90e2;
-  }
-  body.light-mode select#vegetable:focus {
-    background-color: #d6e0ff;
-    border-color: #4a90e2;
-    color: #1e2a43;
-  }
-  body.light-mode #chart-container {
-    background-color: #ffffff;
-    color: #2c3e50;
-    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-  }
-  body.light-mode #loadingSpinner {
-    border: 6px solid #bbb;
-    border-top: 6px solid #4a90e2;
-  }
-</style>
+    @keyframes slideDown {
+      0% { opacity: 0; transform: translateY(-20px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+  </style>
 </head>
 <body>
-  <div id="darkModeToggleContainer">
-    <label id="darkModeLabel" for="darkModeToggle">Dark Mode</label>
-    <input type="checkbox" id="darkModeToggle" checked aria-label="Toggle dark mode" />
+  <h1>Vegetable Price Analysis</h1>
+  <div style="text-align:center;">
+    <label for="vegetable">Choose Vegetable:</label>
+    <select id="vegetable" onchange="fetchAll()">
+      <option value="">-- Select a vegetable --</option>
+      {% for veg in vegetables %}
+        <option value="{{ veg }}">{{ veg }}</option>
+      {% endfor %}
+    </select>
   </div>
 
-  <h2>Vegetable Prices - Last 10 Days</h2>
+  <div id="noVegSelected">Please select a vegetable to view analysis.</div>
 
-  <label for="vegetable">Choose a Vegetable:</label>
-  <select id="vegetable" onchange="fetchData()" aria-describedby="startMessage">
-    <option value="">--Select--</option>
-    {% for veg in vegetables %}
-    <option value="{{ veg }}">{{ veg }}</option>
-    {% endfor %}
-  </select>
-
-  <div id="chart-container" role="region" aria-live="polite" aria-label="Vegetable price chart container">
-    <div id="loadingSpinner"></div>
-    <div id="startMessage" style="position:absolute; color:#6b7a96; font-weight:600; font-size:1.15rem;">
-      Select a vegetable to get started
-    </div>
-    <canvas id="priceChart" style="display:none;"></canvas>
+  <div id="chart-container">
+    <div id="loadingSpinner">Loading chart...</div>
+    <canvas id="mainChart" height="100"></canvas>
+    <canvas id="tripleYChart" height="100"></canvas>
   </div>
 
-<script>
-  let chart;
-  const selectVeg = document.getElementById("vegetable");
-  const loadingSpinner = document.getElementById("loadingSpinner");
-  const startMessage = document.getElementById("startMessage");
-  const canvas = document.getElementById("priceChart");
-  const body = document.body;
-  const darkToggle = document.getElementById("darkModeToggle");
+  <script>
+    let mainChart, tripleYChart;
 
-  // Dark mode toggle init
-  function setDarkMode(isDark) {
-    if (isDark) {
-      body.classList.remove('light-mode');
-      darkToggle.checked = true;
-    } else {
-      body.classList.add('light-mode');
-      darkToggle.checked = false;
-    }
-  }
-  // Load saved mode from localStorage or default dark
-  const savedMode = localStorage.getItem('darkMode');
-  setDarkMode(savedMode !== 'light');
+    function fetchAll() {
+      const veg = document.getElementById("vegetable").value;
 
-  darkToggle.addEventListener('change', () => {
-    setDarkMode(darkToggle.checked);
-    localStorage.setItem('darkMode', darkToggle.checked ? 'dark' : 'light');
-    if(chart) chart.update();
-  });
-
-  function fetchData() {
-    const veg = selectVeg.value;
-
-    if (!veg) {
-      if(chart) {
-        chart.destroy();
-        chart = null;
+      if (!veg) {
+        document.getElementById("noVegSelected").style.display = "block";
+        document.getElementById("mainChart").style.display = "none";
+        document.getElementById("tripleYChart").style.display = "none";
+        return;
       }
-      canvas.style.display = 'none';
-      startMessage.style.display = 'block';
-      loadingSpinner.style.display = 'none';
-      return;
-    }
 
-    // Show spinner and hide others while loading
-    loadingSpinner.style.display = 'block';
-    startMessage.style.display = 'none';
-    canvas.style.display = 'none';
+      document.getElementById("noVegSelected").style.display = "none";
+      document.getElementById("mainChart").style.display = "block";
+      document.getElementById("tripleYChart").style.display = "block";
+      document.getElementById("loadingSpinner").style.display = "block";
 
-    fetch(`/get_data?vegetable=${encodeURIComponent(veg)}`)
-      .then(response => response.json())
-      .then(data => {
-        loadingSpinner.style.display = 'none';
+      fetch(`/get_data?vegetable=${encodeURIComponent(veg)}`)
+        .then(res => res.json())
+        .then(data => {
+          const labels = data.map(d => d.date);
+          const prices = data.map(d => d.wholesale_price);
+          const dma90 = data.map(d => d.dma_90);
+          const dma30 = data.map(d => d.dma_30);
+          const median90 = data.map(d => d.median_90);
 
-        if (!data || data.error) {
-          alert(data.error || "No data available for this vegetable.");
-          if(chart) {
-            chart.destroy();
-            chart = null;
-          }
-          canvas.style.display = 'none';
-          startMessage.style.display = 'block';
-          return;
-        }
-
-        const labels = data.map(row => row.date);
-        const wholesale = data.map(row => row.wholesale_price);
-        const dma90 = data.map(row => row.dma_90);
-        const dma30 = data.map(row => row.dma_30);
-        const median90 = data.map(row => row.median_90);
-
-        if (chart) chart.destroy();
-
-        const ctx = canvas.getContext("2d");
-        chart = new Chart(ctx, {
-          type: "line",
-          data: {
-            labels: labels,
-            datasets: [
-              {
-                label: "Wholesale Price",
-                data: wholesale,
-                borderColor: "#4a90e2",
-                backgroundColor: "rgba(74, 144, 226, 0.2)",
-                fill: true,
-                tension: 0.3,
-                pointRadius: 5,
-                pointHoverRadius: 9,
-                borderWidth: 3
-              },
-              {
-                label: "90 DMA",
-                data: dma90,
-                borderColor: "#ff9f1a",
-                backgroundColor: "rgba(255,159,26,0.2)",
-                fill: true,
-                tension: 0.3,
-                pointRadius: 5,
-                pointHoverRadius: 9,
-                borderWidth: 3
-              },
-              {
-                label: "30 DMA",
-                data: dma30,
-                borderColor: "#2ec4b6",
-                backgroundColor: "rgba(46,196,182,0.2)",
-                fill: true,
-                tension: 0.3,
-                pointRadius: 5,
-                pointHoverRadius: 9,
-                borderWidth: 3
-              },
-              {
-                label: "90 Median",
-                data: median90,
-                borderColor: "#e71d36",
-                backgroundColor: "rgba(231,29,54,0.2)",
-                fill: true,
-                tension: 0.3,
-                pointRadius: 5,
-                pointHoverRadius: 9,
-                borderWidth: 3
-              }
-            ]
-          },
-          options: {
-            responsive: true,
-            interaction: {
-              mode: 'nearest',
-              intersect: true
+          const ctx = document.getElementById("mainChart").getContext("2d");
+          if (mainChart) mainChart.destroy();
+          mainChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+              labels: labels,
+              datasets: [
+                {
+                  label: "Wholesale Price (₹/kg)",
+                  data: prices,
+                  borderColor: "#4a90e2",
+                  backgroundColor: "rgba(74, 144, 226, 0.2)",
+                  fill: true,
+                  tension: 0.3,
+                  pointRadius: 5,
+                  pointHoverRadius: 9,
+                  borderWidth: 3
+                },
+                {
+                  label: "90 DMA (₹/kg)",
+                  data: dma90,
+                  borderColor: "#ff9f1a",
+                  backgroundColor: "rgba(255,159,26,0.2)",
+                  fill: true,
+                  tension: 0.3,
+                  pointRadius: 5,
+                  pointHoverRadius: 9,
+                  borderWidth: 3
+                },
+                {
+                  label: "30 DMA (₹/kg)",
+                  data: dma30,
+                  borderColor: "#2ec4b6",
+                  backgroundColor: "rgba(46,196,182,0.2)",
+                  fill: true,
+                  tension: 0.3,
+                  pointRadius: 5,
+                  pointHoverRadius: 9,
+                  borderWidth: 3
+                },
+                {
+                  label: "90 Median (₹/kg)",
+                  data: median90,
+                  borderColor: "#e71d36",
+                  backgroundColor: "rgba(231,29,54,0.2)",
+                  fill: true,
+                  tension: 0.3,
+                  pointRadius: 5,
+                  pointHoverRadius: 9,
+                  borderWidth: 3
+                }
+              ]
             },
-            plugins: {
-              legend: {
-                position: 'top',
-                labels: {
+            options: {
+              responsive: true,
+              plugins: {
+                legend: {
+                  position: 'top',
+                  labels: {
+                    font: {
+                      size: 14,
+                      weight: '600',
+                      family: "'Inter', 'Poppins', sans-serif"
+                    },
+                    color: '#cfd8dc'
+                  }
+                },
+                title: {
+                  display: true,
+                  text: `Price Trend for ${veg}`,
                   font: {
-                    size: 14,
-                    weight: '600',
-                    family: "'Inter', 'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif"
+                    size: 20,
+                    weight: '700',
+                    family: "'Inter', 'Poppins', sans-serif"
                   },
-                  color: body.classList.contains('light-mode') ? '#2c3e50' : '#cfd8dc'
+                  color: '#eceff1',
+                  padding: { top: 10, bottom: 20 }
+                },
+                tooltip: {
+                  enabled: true,
+                  mode: 'index',
+                  intersect: false,
+                  backgroundColor: '#263238',
+                  titleColor: '#eceff1',
+                  bodyColor: '#eceff1',
+                  borderColor: '#37474f',
+                  borderWidth: 1,
+                  caretSize: 6
                 }
               },
-              title: {
-                display: true,
-                text: `Price Trend for ${veg}`,
-                font: {
-                  size: 20,
-                  weight: '700',
-                  family: "'Inter', 'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif"
+              scales: {
+                x: {
+                  ticks: { color: "#a0aec0" },
+                  grid: { color: "#2f3d4c" }
                 },
-                color: body.classList.contains('light-mode') ? '#2c3e50' : '#eceff1',
-                padding: {
-                  top: 10,
-                  bottom: 20
-                }
-              },
-              tooltip: {
-                enabled: true,
-                mode: 'index',
-                intersect: false,
-                backgroundColor: body.classList.contains('light-mode') ? '#f0f4f8' : '#263238',
-                titleColor: body.classList.contains('light-mode') ? '#2c3e50' : '#eceff1',
-                bodyColor: body.classList.contains('light-mode') ? '#2c3e50' : '#cfd8dc',
-                cornerRadius: 6,
-                displayColors: true
-              }
-            },
-            scales: {
-              x: {
-                ticks: {
-                  maxRotation: 45,
-                  minRotation: 30,
-                  font: {
-                    size: 12,
-                    family: "'Inter', 'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-                    weight: '600',
-                    color: body.classList.contains('light-mode') ? '#536878' : '#90a4ae'
-                  }
-                },
-                grid: {
-                  display: false,
-                  color: body.classList.contains('light-mode') ? '#cfd8dc' : "#37474f"
-                },
-                border: {
-                  color: body.classList.contains('light-mode') ? '#cfd8dc' : '#37474f'
-                }
-              },
-              y: {
-                beginAtZero: true,
-                ticks: {
-                  font: {
-                    size: 12,
-                    family: "'Inter', 'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-                    weight: '600',
-                    color: body.classList.contains('light-mode') ? '#536878' : '#90a4ae'
-                  }
-                },
-                grid: {
-                  color: body.classList.contains('light-mode') ? '#e1e8f0' : '#2c3e50'
-                },
-                border: {
-                  color: body.classList.contains('light-mode') ? '#cfd8dc' : '#37474f'
-                }
-              }
-            },
-            animation: {
-              duration: 800,
-              easing: 'easeInOutQuad'
-            },
-            hover: {
-              mode: 'nearest',
-              intersect: true,
-              onHover: (event, chartElements) => {
-                if(chartElements.length) {
-                  event.native.target.style.cursor = 'pointer';
-                } else {
-                  event.native.target.style.cursor = 'default';
+                y: {
+                  title: {
+                    display: true,
+                    text: "₹ / kg",
+                    color: "#cfd8dc"
+                  },
+                  ticks: { color: "#a0aec0" },
+                  grid: { color: "#2f3d4c" }
                 }
               }
             }
-          }
+          });
+
+          document.getElementById("loadingSpinner").style.display = "none";
         });
 
-        canvas.style.display = 'block';
-      })
-      .catch(err => {
-        loadingSpinner.style.display = 'none';
-        startMessage.style.display = 'block';
-        canvas.style.display = 'none';
-        if(chart) {
-          chart.destroy();
-          chart = null;
-        }
-        alert("Error fetching data. Please try again later.");
-        console.error(err);
-      });
-  }
-</script>
+      fetch(`/get_weather_data?vegetable=${encodeURIComponent(veg)}`)
+        .then(res => res.json())
+        .then(data => {
+          const labels = data.map(d => d.date);
+          const prices = data.map(d => d.wholesale_price);
+          const temps = data.map(d => d.afternoon_temp);
+          const rains = data.map(d => d.afternoon_rain);
+
+          const ctx = document.getElementById("tripleYChart").getContext("2d");
+          if (tripleYChart) tripleYChart.destroy();
+
+          tripleYChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+              labels: labels,
+              datasets: [
+                {
+                  label: 'Wholesale Price (₹)',
+                  data: prices,
+                  borderColor: '#4a90e2',
+                  backgroundColor: 'rgba(74,144,226,0.2)',
+                  fill: true,
+                  tension: 0.3,
+                  pointRadius: 5,
+                  pointHoverRadius: 9,
+                  borderWidth: 3,
+                  yAxisID: 'yPrice'
+                },
+                {
+                  label: 'Afternoon Temperature (°C)',
+                  data: temps,
+                  borderColor: '#e71d36',
+                  backgroundColor: 'rgba(231,29,54,0.2)',
+                  fill: true,
+                  tension: 0.3,
+                  pointRadius: 5,
+                  pointHoverRadius: 9,
+                  borderWidth: 3,
+                  yAxisID: 'yTemp'
+                },
+                {
+                  label: 'Afternoon Precipitation (mm)',
+                  data: rains,
+                  borderColor: '#ff9f1a',
+                  backgroundColor: 'rgba(255,159,26,0.2)',
+                  fill: true,
+                  tension: 0.3,
+                  pointRadius: 5,
+                  pointHoverRadius: 9,
+                  borderWidth: 3,
+                  yAxisID: 'yRain'
+                }
+              ]
+            },
+            options: {
+              responsive: true,
+              plugins: {
+                title: {
+                  display: true,
+                  text: 'Price vs Temp vs Rain (last 10 days)',
+                  color: '#e1e8f0',
+                  font: { size: 18, weight: 'bold' }
+                },
+                legend: {
+                  labels: { color: "#a0aec0" }
+                }
+              },
+              scales: {
+                x: {
+                  ticks: { color: "#a0aec0" },
+                  grid: { color: "#2f3d4c" }
+                },
+                yPrice: {
+                  type: 'linear',
+                  position: 'left',
+                  title: { display: true, text: 'Price (₹)', color: "#cfd8dc" },
+                  ticks: { color: "#4a90e2" },
+                  grid: { drawOnChartArea: false }
+                },
+                yTemp: {
+                  type: 'linear',
+                  position: 'right',
+                  title: { display: true, text: 'Temp (°C)', color: "#cfd8dc" },
+                  ticks: { color: "#e71d36" },
+                  grid: { drawOnChartArea: false }
+                },
+                yRain: {
+                  type: 'linear',
+                  position: 'right',
+                  offset: true,
+                  title: { display: true, text: 'Rainfall (mm)', color: "#cfd8dc" },
+                  ticks: { color: "#ff9f1a" },
+                  grid: { drawOnChartArea: false }
+                }
+              }
+            }
+          });
+        });
+    }
+
+    window.onload = fetchAll;
+  </script>
 </body>
 </html>
